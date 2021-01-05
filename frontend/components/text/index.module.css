@@ -1,0 +1,12 @@
+@import "../../themes/default.module.css";
+
+.Text {
+  font-size: 1rem;
+  color: $color-text-primary;
+}
+
+.TitleWhiteExtraBig {
+  font-size: 3rem;
+  font-weight: 600;
+  color: $primary-white;
+}

@@ -1,0 +1,27 @@
+@import "../../themes/default.module.css";
+
+.Button {
+  font-size: inherit;
+  height: 3rem;
+  padding: 0 1.5rem;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  color: $primary-white;
+  transition: all $transition-animation-duration ease-in;
+  user-select: none;
+}
+
+.Button.BlueButton {
+  background-color: $blue-btn;
+}
+
+.Button.DangerButton {
+  background-color: $danger-btn;
+}
+
+.Button.AttentionButton {
+  background-color: $attention-btn;
+}

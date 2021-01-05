@@ -1,0 +1,5 @@
+.Container {
+  width: 40%;
+  max-width: rem(550px);
+  height: 100%;
+}

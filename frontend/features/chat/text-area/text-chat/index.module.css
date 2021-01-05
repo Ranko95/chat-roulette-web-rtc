@@ -1,0 +1,8 @@
+@import "../../../../themes/default.module.css";
+
+.Container {
+  width: 100%;
+  flex-grow: 1;
+
+  background: $primary-white;
+}

@@ -1,0 +1,21 @@
+$primary-white: #ffffff;
+$primary-black: #221e22;
+$primary-grey: #363535;
+
+/*Text*/
+$color-text-primary: #26272f;
+
+/*Backgrounds*/
+$dark-black: #000000;
+
+/* Animation */
+$transition-animation-duration: 200ms;
+
+/* Buttons */
+$blue-btn: #1F709C;
+$danger-btn: #AA5234;
+$attention-btn: #C41C1C;
+
+/* Shadows */
+$primary-shadow: rgba(30, 30, 30, 0.08);
+$light-shadow: rgba(30, 30, 30, 0.1);

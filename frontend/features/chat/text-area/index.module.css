@@ -1,0 +1,14 @@
+@import "../../../themes/default.module.css";
+
+.Container {
+  width: 100%;
+  min-width: 60%;
+  height: 100%;
+
+  display: flex;
+  flex-flow: column;
+
+  background: transparent;
+
+  border-left: 10px solid $primary-grey;
+}
