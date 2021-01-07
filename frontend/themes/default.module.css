@@ -15,7 +15,11 @@ $transition-animation-duration: 200ms;
 $blue-btn: #1F709C;
 $danger-btn: #AA5234;
 $attention-btn: #C41C1C;
+$grey-btn: #7C7979;
 
 /* Shadows */
 $primary-shadow: rgba(30, 30, 30, 0.08);
 $light-shadow: rgba(30, 30, 30, 0.1);
+
+/* Borders */
+$light-grey: #E9E9E9;

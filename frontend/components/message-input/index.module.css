@@ -1,0 +1,32 @@
+@import "../../themes/default.module.css";
+
+.ScrollContainer {
+  width: 100%;
+  height: 3rem;
+
+  margin-right: rem(10px);
+}
+
+.MessageInput {
+  width: 100%;
+  height: 100%;
+
+  padding: rem(5px) rem(8px);
+
+  overflow: hidden;
+
+  outline: none;
+
+  border-radius: 5px;
+
+  cursor: text;
+
+  box-shadow: 0 -2px 8px -4px $light-shadow;
+  border: 1px solid $light-grey;
+}
+
+.Placeholder {
+  line-height: 20px;
+
+  color: grey;
+}

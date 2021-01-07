@@ -19,6 +19,7 @@ const Button: FunctionComponent<Props> = (props) => {
     { [css.BlueButton]: type === "blue" },
     { [css.DangerButton]: type === "danger" },
     { [css.AttentionButton]: type === "attention" },
+    { [css.GreyButton]: type === "grey" },
   );
 
   return (

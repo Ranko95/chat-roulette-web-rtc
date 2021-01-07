@@ -25,3 +25,7 @@
 .Button.AttentionButton {
   background-color: $attention-btn;
 }
+
+.Button.GreyButton {
+  background-color: $grey-btn;
+}

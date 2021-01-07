@@ -3,6 +3,25 @@
 .Container {
   width: 100%;
   flex-grow: 1;
+  display: flex;
+  flex-flow: column;
+  padding: rem(20px) rem(10px);
 
   background: $primary-white;
+}
+
+.MessagesContainer {
+  flex-grow: 1;
+
+  margin-bottom: rem(10px);
+
+  border-radius: 5px;
+
+  box-shadow: 0 -2px 8px -4px $light-shadow;
+  border: 2px solid $light-grey;
+}
+
+.MessageInputWrapper {
+  display: flex;
+  flex-flow: row;
 }
