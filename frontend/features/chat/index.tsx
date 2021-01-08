@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
+import socketIOClient from "socket.io-client";
 import css from "./index.module.css";
 import TextArea from "./text-area";
 import VideoArea from "./video-area";
@@ -35,6 +36,13 @@ const Chat: FunctionComponent = () => {
       audioTrack.enabled = !audioTrack.enabled;
     }
   };
+
+  useEffect(() => {
+    const socket = socketIOClient("http://localhost:5000", { transports: ["websocket"], forceNew: true });
+    socket.on("connect", () => {
+      console.log("Initial connect to roulette server");
+    });
+  }, []);
 
   return (
     <div className={css.Container}>
