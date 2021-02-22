@@ -1,48 +1,55 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
-import socketIOClient from "socket.io-client";
-import css from "./index.module.css";
+import React, { FunctionComponent, useEffect, useState, useContext } from "react";
+import { useUpdate } from "react-use";
+import { Context as RoulleteContext } from "../../context/roulette";
 import TextArea from "./text-area";
 import VideoArea from "./video-area";
+import { MediaTracks } from "./types";
+import css from "./index.module.css";
 
 const Chat: FunctionComponent = () => {
+  const { socket } = useContext(RoulleteContext);
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+
+  const forceUpdate = useUpdate();
 
   const openMediaDevices = async (constraints: MediaStreamConstraints) => {
     return await navigator.mediaDevices.getUserMedia(constraints);
   };
 
+  const aquireDevices = async () => {
+    const stream = await openMediaDevices({ "video": true, "audio": { "echoCancellation": true } });
+    console.log("Got MediaStream:", stream);
+    setLocalStream(stream);
+  }
+
   const handleStart = async () => {
     try {
-      const stream = await openMediaDevices({ "video": true });
-      console.log("Got MediaStream:", stream);
-      setLocalStream(stream);
+      if (!localStream) {
+        aquireDevices();
+      }
+
+      if (socket) {
+        socket.emit("start");
+      }
     } catch (error) {
-      console.error("Error accessing media devies", error);
+      console.error("Error accessing media devices", error);
     }
   };
 
-  const toggleTrack = (type: "video" | "audio"): void => {
+  const toggleTrack = (type: MediaTracks): void => {
     if (!localStream) {
-      return;
+      aquireDevices();
+      return
     }
+    
+    localStream.getTracks()
+      .filter(track => track.kind === type)
+      .forEach(track => track.enabled = !track.enabled);
 
-    if (type === "video") {
-      const videoTrack = localStream.getVideoTracks()[0];
-      videoTrack.enabled = !videoTrack.enabled;
-    }
-
-    if (type === "audio") {
-      const audioTrack = localStream.getAudioTracks()[0];
-      audioTrack.enabled = !audioTrack.enabled;
-    }
+      forceUpdate();
   };
-
-  useEffect(() => {
-    const socket = socketIOClient("http://localhost:5000", { transports: ["websocket"], forceNew: true });
-    socket.on("connect", () => {
-      console.log("Initial connect to roulette server");
-    });
-  }, []);
 
   return (
     <div className={css.Container}>

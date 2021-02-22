@@ -25,3 +25,16 @@
   display: flex;
   flex-flow: row;
 }
+
+.SearchingInfo {
+  padding: rem(12px);
+}
+
+.SearchingInfo span {
+  animation: fade 1s infinite;
+}
+
+@keyframes fade {
+  from { opacity: 1; }
+  to { opacity: 0.5; }
+}

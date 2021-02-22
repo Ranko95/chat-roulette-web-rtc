@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from "react";
 import Video from "../../../components/video";
+import { MediaTracks } from "../types";
 import css from "./index.module.css";
 
 interface Props {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
-  toggleTrack(type: "video" | "audio"): void;
+  toggleTrack(type: MediaTracks): void;
 }
 
 const VideoArea: FunctionComponent<Props> = (props) => {

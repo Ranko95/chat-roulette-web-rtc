@@ -4,11 +4,12 @@ import Camera from "../../assets/video.svg";
 import CameraOff from "../../assets/no-video.svg";
 import Microphone from "../../assets/microphone.svg";
 import MicrophoneOff from "../../assets/no-microphone.svg";
+import { MediaTracks } from "../../features/chat/types";
 import css from "./index.module.css";
 interface Props {
   type: "local" | "remote";
   stream: MediaStream | null;
-  toggleTrack?(type: "video" | "audio"): void;
+  toggleTrack?(type: MediaTracks): void;
 }
 
 const Video: FunctionComponent<Props> = (props) => {
@@ -17,7 +18,7 @@ const Video: FunctionComponent<Props> = (props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const isVideoEnabled = stream?.getVideoTracks()[0].enabled;
-  const isAudioEnabled = stream?.getAudioTracks()[0];
+  const isAudioEnabled = stream?.getAudioTracks()[0].enabled;
   
   useEffect(() => {
     if (videoRef && videoRef.current && stream) {
@@ -31,14 +32,14 @@ const Video: FunctionComponent<Props> = (props) => {
       {type === "local" ? (
       <div className={css.Controls}>
         {isVideoEnabled ? (
-          <Camera onClick={() => toggleTrack && toggleTrack("video")} />
+          <Camera onClick={() => toggleTrack && toggleTrack(MediaTracks.Video)} />
         ) : (
-          <CameraOff onClick={() => toggleTrack && toggleTrack("video")} />
+          <CameraOff onClick={() => toggleTrack && toggleTrack(MediaTracks.Video)} />
         )}
         {isAudioEnabled ? (
-          <Microphone onClick={() => toggleTrack && toggleTrack("audio")} />
+          <Microphone onClick={() => toggleTrack && toggleTrack(MediaTracks.Audio)} />
         ) : (
-          <MicrophoneOff onClick={() => toggleTrack && toggleTrack("audio")} />
+          <MicrophoneOff onClick={() => toggleTrack && toggleTrack(MediaTracks.Audio)} />
         )}
       </div>) : undefined}
     </div>

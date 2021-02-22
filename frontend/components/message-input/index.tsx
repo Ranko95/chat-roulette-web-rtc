@@ -6,10 +6,12 @@ import css from "./index.module.css";
 interface Props {
   value: string;
   placeholder: string;
+  onInput(e: React.ChangeEvent<HTMLDivElement>): void;
+  onKeyPress(e: React.KeyboardEvent<HTMLDivElement>): void;
 }
 
 const MessageInput = forwardRef<HTMLInputElement, Props>((props, ref) => {
-  const { value, placeholder } = props;
+  const { value, placeholder, onInput, onKeyPress } = props;
 
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -48,6 +50,8 @@ const MessageInput = forwardRef<HTMLInputElement, Props>((props, ref) => {
           ref={ref}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          onInput={onInput}
+          onKeyPress={(e) => onKeyPress(e)}
         />
       </Scrollbars>
     </div>

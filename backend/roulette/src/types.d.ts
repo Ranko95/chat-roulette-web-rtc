@@ -2,6 +2,11 @@ import { Socket } from "socket.io";
 
 export type Session = {
   id: string;
-  socket: Socket;
-  peer?: string;
+  peer1: string;
+  peer2: string;
+}
+
+export type User = {
+  id: string;
+  isSearching: boolean;
 }

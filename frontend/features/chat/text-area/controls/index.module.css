@@ -1,3 +1,7 @@
 .Container {
   padding-bottom: rem(10px);
 }
+
+.ButtonsContainer button:first-child {
+  margin-right: rem(10px);
+}

@@ -19,6 +19,8 @@
   border-radius: inherit;
 
   object-fit: cover;
+
+  transform: rotateY(180deg);
 }
 
 .ContainerLocal {
