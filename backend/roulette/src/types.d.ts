@@ -1,12 +1,12 @@
 import { Socket } from "socket.io";
 
-export type Session = {
-  id: string;
-  peer1: string;
-  peer2: string;
+export type Session {
+  peer1: User,
+  peer2: User
 }
 
 export type User = {
-  id: string;
+  socket: Socket;
   isSearching: boolean;
+  roomId?: string;
 }

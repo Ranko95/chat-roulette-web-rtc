@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState, useContext } from "react";
+import React, { FunctionComponent, useState, useContext, useEffect } from "react";
 import { useUpdate } from "react-use";
 import { Context as RoulleteContext } from "../../context/roulette";
 import TextArea from "./text-area";
@@ -7,7 +7,7 @@ import { MediaTracks } from "./types";
 import css from "./index.module.css";
 
 const Chat: FunctionComponent = () => {
-  const { socket } = useContext(RoulleteContext);
+  const { socket, sessionId, isMaster } = useContext(RoulleteContext);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);

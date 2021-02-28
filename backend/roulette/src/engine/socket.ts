@@ -3,11 +3,14 @@ import socketIO, { Socket } from 'socket.io';
 import { Roulette } from "../roulette";
 
 export function runServer(server: Server) {
-  //@ts-ignore
+  // @ts-ignore
   const io = socketIO(server, { transports: ["websocket"] });
 
   const roulette = new Roulette();
-  roulette.on("searching", (id) => console.log(`A user ${id} started searching`));
+  roulette.on("session-created", ({ roomId, masterId }) => {
+    console.log(`session ${roomId} has been created!`);
+    io.to(roomId).emit("session-created", { roomId, masterId });
+  }); 
 
   io.on("connection", (socket: Socket) => {
     console.log(`a user ${socket.id} connected to the roulette server`);
@@ -19,9 +22,13 @@ export function runServer(server: Server) {
       socket.emit("started");
     });
 
-    socket.on("stopped",() => {
+    socket.on("stopped", () => {
       console.log(`a user ${socket.id} stopped roulette`);
       roulette.stop(socket);
+    });
+
+    socket.on("signaling-channel", (message: RTCOfferOptions | RTCAnswerOptions) => {
+      socket.broadcast.emit("peer-connection-message", message);
     });
 
     socket.once("disconnect", () => {

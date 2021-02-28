@@ -30,7 +30,7 @@
   padding: rem(12px);
 }
 
-.SearchingInfo span {
+.SearchingInfo:not(.Found) span {
   animation: fade 1s infinite;
 }
 

@@ -10,7 +10,7 @@ interface Props {
 const Controls: FunctionComponent<Props> = (props) => {
   const { onStart } = props;
 
-  const { socket, isRouletteStarted, setIsRouletteStarted } = useContext(RouletteContext);
+  const { socket, sessionId, isRouletteStarted, setIsRouletteStarted } = useContext(RouletteContext);
 
   const handleStop = () => {
     if (socket) {
@@ -29,8 +29,8 @@ const Controls: FunctionComponent<Props> = (props) => {
     <div className={css.Container}>
       {isRouletteStarted ? (
         <div className={css.ButtonsContainer}>
-          <Button type="grey" onClick={handleStop}>Stop</Button>
-          <Button type="blue" onClick={handleNext}>Next</Button>
+          <Button type={!sessionId ? "grey" : "danger"} onClick={handleStop}>{sessionId ? "Disconnect" : "Stop"}</Button>
+          <Button type="blue" onClick={handleNext} disabled={!sessionId}>Next</Button>
         </div>
       ) : (
         <Button type="blue" onClick={onStart}>Start</Button>

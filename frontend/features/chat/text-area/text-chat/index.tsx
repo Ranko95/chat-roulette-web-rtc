@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useRef, useState, useEffect, useContext } from "react";
+import cn from "classnames";
 import Scrollbars from "react-custom-scrollbars";
 import { Context as RouletteContext } from "../../../../context/roulette";
 import Button from "../../../../components/button";
@@ -9,7 +10,7 @@ import css from "./index.module.css";
 const TextChat: FunctionComponent = () => {
   const [value, setValue] = useState<string>("");
 
-  const { isRouletteStarted } = useContext(RouletteContext);
+  const { sessionId, isRouletteStarted } = useContext(RouletteContext);
 
   const messageInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,8 +38,8 @@ const TextChat: FunctionComponent = () => {
     <div className={css.Container}>
       <div className={css.MessagesContainer}>
         {isRouletteStarted ? (
-          <div className={css.SearchingInfo}>
-            <Text type="text">Searching for a partner...</Text>
+          <div className={cn(css.SearchingInfo, { [css.Found]: sessionId })}>
+            <Text type="text">{ !sessionId ? "Searching for a partner..." : "Partner is found, start a conversation!"}</Text>
           </div>
         ) : undefined}
       </div>
