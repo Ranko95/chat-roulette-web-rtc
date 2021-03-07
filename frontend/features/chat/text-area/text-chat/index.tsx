@@ -1,16 +1,15 @@
 import React, { FunctionComponent, useRef, useState, useEffect, useContext } from "react";
 import cn from "classnames";
 import Scrollbars from "react-custom-scrollbars";
-import { Context as RouletteContext } from "../../../../context/roulette";
+import { ChatMessage, Context as RouletteContext } from "../../../../context/roulette";
 import Button from "../../../../components/button";
 import Text from "../../../../components/text";
 import MessageInput from "../../../../components/message-input";
 import css from "./index.module.css";
-
 const TextChat: FunctionComponent = () => {
   const [value, setValue] = useState<string>("");
 
-  const { sessionId, isRouletteStarted } = useContext(RouletteContext);
+  const { socket, sessionId, isRouletteStarted, chatMessages } = useContext(RouletteContext);
 
   const messageInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,21 +26,50 @@ const TextChat: FunctionComponent = () => {
     // }
     if (charCode === 13) {
       e.preventDefault();
-      console.log("submit");
-      setValue("");
-      return currentTarget.innerHTML = "";
+      handleSendMessage();
+
+      return e.currentTarget.innerHTML = "";
+    }
+  };
+  
+  const handleSendMessage = () => {
+    if (!value || !socket || !sessionId) {
+      return;
     }
 
+    const message: ChatMessage = {
+      id: socket.id,
+      message: value,
+      sessionId
+    };
+
+    socket.emit("chat-message", message);
+
+    setValue("");
   };
 
   return (
     <div className={css.Container}>
       <div className={css.MessagesContainer}>
+      <Scrollbars universal autoHide>
         {isRouletteStarted ? (
           <div className={cn(css.SearchingInfo, { [css.Found]: sessionId })}>
             <Text type="text">{ !sessionId ? "Searching for a partner..." : "Partner is found, start a conversation!"}</Text>
           </div>
         ) : undefined}
+        <div className={css.MessagesWrapper}>
+          {chatMessages.map((m: ChatMessage, i) => {
+            const isMe = m.id === socket?.id;
+            
+            return (
+              <div className={css.Message} key={i}>
+                <Text type="text">{isMe ? "Me: " : "Partner: "}</Text>
+                <Text type="text">{m.message}</Text>
+              </div>
+            );
+          })}
+        </div>
+      </Scrollbars>
       </div>
       <div className={css.MessageInputWrapper}>
         <MessageInput 
@@ -51,7 +79,7 @@ const TextChat: FunctionComponent = () => {
           onInput={handleInput}
           onKeyPress={handleKeyPress}
         />
-        <Button type="grey">Send</Button>
+        <Button type="grey" onClick={handleSendMessage}>Send</Button>
       </div>
     </div>
   )

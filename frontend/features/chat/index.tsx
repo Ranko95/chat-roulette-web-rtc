@@ -7,10 +7,16 @@ import { MediaTracks } from "./types";
 import css from "./index.module.css";
 
 const Chat: FunctionComponent = () => {
-  const { socket, sessionId, isMaster } = useContext(RoulleteContext);
-
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const { 
+    socket, 
+    sessionId, 
+    isMaster, 
+    peerConnection, 
+    localStream, 
+    remoteStream, 
+    setLocalStream, 
+    setRemoteStream 
+  } = useContext(RoulleteContext);
 
   const forceUpdate = useUpdate();
 
@@ -50,6 +56,14 @@ const Chat: FunctionComponent = () => {
 
       forceUpdate();
   };
+
+  useEffect(() => {
+    if (localStream && peerConnection) {
+      localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream)
+      });
+    }
+  }, [localStream]);
 
   return (
     <div className={css.Container}>

@@ -8,32 +8,53 @@ export interface ContextValue {
   isMaster: boolean;
   isRouletteStarted: boolean;
   peerConnection: RTCPeerConnection | null;
+  chatMessages: ChatMessage[];
+  localStream: MediaStream | null,
+  remoteStream: MediaStream | null,
   setIsRouletteStarted(val: boolean): void;
+  setLocalStream(stream: MediaStream | null): void;
+  setRemoteStream(stream: MediaStream | null): void;
+}
+
+export type ChatMessage = {
+  id: string;
+  message: string;
+  sessionId: string;
 }
 
 export const Context = React.createContext<ContextValue>({} as ContextValue);
 
-const CONFIGURATION = {'iceServers': iceServers};
+const CONFIGURATION = {
+  mandatory: {
+    offerToReceiveAudio: 1,
+    offerToReceiveVideo: 1
+  },
+  'iceServers': iceServers
+};
 
 export const Provider: FunctionComponent = (props) => {
   const { children } = props;
 
   const [socket, setSocket] = useState<typeof Socket | null>(null);
+
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   
   const [isRouletteStarted, setIsRouletteStarted] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isMaster, setIsMaster] = useState<boolean>(false);
 
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
-  
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
   const makeCall = async () => {
-    const newPeerConnection = new RTCPeerConnection(CONFIGURATION);
-
-    const offer = await newPeerConnection.createOffer();
-    await newPeerConnection.setLocalDescription(offer);
-    setPeerConnection(newPeerConnection);
-
-    socket?.emit("signaling-channel", offer);
+    if (peerConnectionRef.current) {
+      const offer = await peerConnectionRef.current.createOffer();
+      await peerConnectionRef.current.setLocalDescription(offer);
+  
+      socket?.emit("signaling-channel", offer);
+    }
   };
 
   const connect = () => {
@@ -63,23 +84,33 @@ export const Provider: FunctionComponent = (props) => {
       console.log("MESSAGE", message);
 
       if (message.type === "offer") {
-        const newPeerConnection = new RTCPeerConnection(CONFIGURATION);
-
-        newPeerConnection.setRemoteDescription(new RTCSessionDescription(message));
-        const answer = await newPeerConnection.createAnswer();
-        await newPeerConnection.setLocalDescription(answer);
-
-        setPeerConnection(newPeerConnection);
-
-        socket.emit("signaling-channel", answer);
+          if (peerConnectionRef.current) {
+            peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message));
+            const answer = await peerConnectionRef.current.createAnswer();
+            await peerConnectionRef.current.setLocalDescription(answer);
+    
+            socket.emit("signaling-channel", answer);
+          }
       }
 
       if (message.type === "answer") {
-        if (peerConnection) {
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(message));
+        if (peerConnectionRef.current) {
+          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message));
         }
       }
     });
+
+    socket.on("chat-message", (message: ChatMessage) => {
+      setChatMessages(p => [...p, message]);
+    });
+  };
+
+  const handleICECandidateEvent = (event: any) => {
+    if (event.candidate) {
+      console.log(event.candidate);
+      console.log(peerConnectionRef.current);
+      socket?.emit("signaling-channel", { type: "ice-candidate", candidate: event.candidate });
+    }
   };
 
   useEffect(() => {
@@ -95,13 +126,13 @@ export const Provider: FunctionComponent = (props) => {
   }, [sessionId, isMaster]);
 
   useEffect(() => {
-    if (peerConnection) {
-      console.log(peerConnection);
-      peerConnection.addEventListener("icecandidate", event => {
-        console.log(event, "ICE CANDIDATE");
-      });
+    peerConnectionRef.current = new RTCPeerConnection(CONFIGURATION);
+
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.createDataChannel("channel");
+      peerConnectionRef.current.onicecandidate = handleICECandidateEvent;
     }
-  }, [peerConnection]);
+  }, []);
 
   return (
     <Context.Provider
@@ -110,8 +141,13 @@ export const Provider: FunctionComponent = (props) => {
         sessionId,
         isMaster,
         isRouletteStarted,
-        peerConnection,
+        peerConnection: peerConnectionRef.current,
+        chatMessages,
+        localStream,
+        remoteStream,
         setIsRouletteStarted,
+        setLocalStream,
+        setRemoteStream,
       }}
     >
       {children}

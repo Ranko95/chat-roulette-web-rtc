@@ -1,6 +1,7 @@
 import { Server } from "http";
 import socketIO, { Socket } from 'socket.io';
 import { Roulette } from "../roulette";
+import { ChatMessage, RTCIceCandidateOptions } from "../types";
 
 export function runServer(server: Server) {
   // @ts-ignore
@@ -27,8 +28,13 @@ export function runServer(server: Server) {
       roulette.stop(socket);
     });
 
-    socket.on("signaling-channel", (message: RTCOfferOptions | RTCAnswerOptions) => {
+    socket.on("signaling-channel", (message: RTCOfferOptions | RTCAnswerOptions | RTCIceCandidateOptions) => {
+      console.log(message);
       socket.broadcast.emit("peer-connection-message", message);
+    });
+    
+    socket.on("chat-message", (message: ChatMessage) => {
+      io.to(message.sessionId).emit("chat-message", message);
     });
 
     socket.once("disconnect", () => {
