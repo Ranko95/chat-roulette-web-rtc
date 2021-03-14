@@ -12,7 +12,8 @@ const Chat: FunctionComponent = () => {
     peerConnection, 
     localStream,
     remoteStream, 
-    setLocalStream,
+    // setLocalStream,
+    setStream
   } = useContext(RoulleteContext);
 
   const forceUpdate = useUpdate();
@@ -22,31 +23,31 @@ const Chat: FunctionComponent = () => {
   };
 
   const aquireDevices = async () => {
-    const stream = await openMediaDevices({ "video": true, "audio": { "echoCancellation": true } });
-    console.log("Got MediaStream:", stream);
-    setLocalStream(stream);
-
-    if (peerConnection) {
-      stream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, stream);
-      });
+    try {
+      const stream = await openMediaDevices({ "video": true, "audio": { "echoCancellation": true } });
+      console.log("Got MediaStream:", stream);
+      setStream(stream, "local");
+  
+      if (peerConnection) {
+        stream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, stream);
+        });
+      }
+    } catch (error) {
+      console.error("Error accessing media devices", error);
     }
 
   }
 
   const handleStart = async () => {
-    try {
-      if (!localStream) {
-        await aquireDevices();
-      }
-
-      if (socket) {
-        socket.emit("start");
-      }
-    } catch (error) {
-      console.error("Error accessing media devices", error);
+    if (!localStream) {
+      await aquireDevices();
     }
-  };
+
+    if (socket) {
+      socket.emit("start");
+    }
+  }
 
   const toggleTrack = (type: MediaTracks): void => {
     if (!localStream) {
@@ -63,7 +64,7 @@ const Chat: FunctionComponent = () => {
 
   return (
     <div className={css.Container}>
-      <VideoArea localStream={localStream} remoteStream={null} toggleTrack={toggleTrack} />
+      <VideoArea localStream={localStream} remoteStream={remoteStream} toggleTrack={toggleTrack} />
       <TextArea onStart={handleStart} />
     </div>
   )
