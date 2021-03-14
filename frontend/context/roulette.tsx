@@ -25,10 +25,6 @@ export type ChatMessage = {
 export const Context = React.createContext<ContextValue>({} as ContextValue);
 
 const CONFIGURATION = {
-  mandatory: {
-    offerToReceiveAudio: 1,
-    offerToReceiveVideo: 1
-  },
   'iceServers': iceServers
 };
 
@@ -50,7 +46,7 @@ export const Provider: FunctionComponent = (props) => {
 
   const makeCall = async () => {
     if (peerConnectionRef.current) {
-      const offer = await peerConnectionRef.current.createOffer();
+      const offer = await peerConnectionRef.current.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
       await peerConnectionRef.current.setLocalDescription(offer);
   
       socket?.emit("signaling-channel", offer);
@@ -84,6 +80,7 @@ export const Provider: FunctionComponent = (props) => {
       console.log("MESSAGE", message);
 
       if (message.type === "offer") {
+        
           if (peerConnectionRef.current) {
             peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message));
             const answer = await peerConnectionRef.current.createAnswer();
@@ -96,6 +93,13 @@ export const Provider: FunctionComponent = (props) => {
       if (message.type === "answer") {
         if (peerConnectionRef.current) {
           await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(message));
+        }
+      }
+
+      if (message.type === "ice-candidate") {
+        if (peerConnectionRef.current) {
+          console.log("ADDING REMOTE ICE CANDIDATES!")
+          await peerConnectionRef.current.addIceCandidate(message.candidate);
         }
       }
     });
@@ -113,11 +117,11 @@ export const Provider: FunctionComponent = (props) => {
     }
   };
 
-  useEffect(() => {
-    if (!socket) {
-      connect();
+  const handleConnectionStateChange = (event: any) => {
+    if(peerConnectionRef.current && peerConnectionRef.current.connectionState === "connected") {
+      console.log("PEERS CONNECTED!!!!");
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (sessionId && isMaster) {
@@ -126,11 +130,16 @@ export const Provider: FunctionComponent = (props) => {
   }, [sessionId, isMaster]);
 
   useEffect(() => {
+    if (!socket) {
+      connect();
+    }
+
     peerConnectionRef.current = new RTCPeerConnection(CONFIGURATION);
 
     if (peerConnectionRef.current) {
       peerConnectionRef.current.createDataChannel("channel");
       peerConnectionRef.current.onicecandidate = handleICECandidateEvent;
+      peerConnectionRef.current.onconnectionstatechange = handleConnectionStateChange;
     }
   }, []);
 

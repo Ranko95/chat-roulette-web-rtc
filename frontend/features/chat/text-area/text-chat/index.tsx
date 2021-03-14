@@ -33,13 +33,13 @@ const TextChat: FunctionComponent = () => {
   };
   
   const handleSendMessage = () => {
-    if (!value || !socket || !sessionId) {
+    if (!value || value.trim() === "" || !socket || !sessionId) {
       return;
     }
 
     const message: ChatMessage = {
       id: socket.id,
-      message: value,
+      message: value.trim(),
       sessionId
     };
 

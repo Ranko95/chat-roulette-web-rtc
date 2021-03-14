@@ -8,14 +8,11 @@ import css from "./index.module.css";
 
 const Chat: FunctionComponent = () => {
   const { 
-    socket, 
-    sessionId, 
-    isMaster, 
+    socket,
     peerConnection, 
-    localStream, 
+    localStream,
     remoteStream, 
-    setLocalStream, 
-    setRemoteStream 
+    setLocalStream,
   } = useContext(RoulleteContext);
 
   const forceUpdate = useUpdate();
@@ -28,12 +25,19 @@ const Chat: FunctionComponent = () => {
     const stream = await openMediaDevices({ "video": true, "audio": { "echoCancellation": true } });
     console.log("Got MediaStream:", stream);
     setLocalStream(stream);
+
+    if (peerConnection) {
+      stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+      });
+    }
+
   }
 
   const handleStart = async () => {
     try {
       if (!localStream) {
-        aquireDevices();
+        await aquireDevices();
       }
 
       if (socket) {
@@ -47,7 +51,7 @@ const Chat: FunctionComponent = () => {
   const toggleTrack = (type: MediaTracks): void => {
     if (!localStream) {
       aquireDevices();
-      return
+      return;
     }
     
     localStream.getTracks()
@@ -56,14 +60,6 @@ const Chat: FunctionComponent = () => {
 
       forceUpdate();
   };
-
-  useEffect(() => {
-    if (localStream && peerConnection) {
-      localStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, localStream)
-      });
-    }
-  }, [localStream]);
 
   return (
     <div className={css.Container}>
