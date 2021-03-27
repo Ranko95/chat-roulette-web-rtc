@@ -41,9 +41,11 @@ class WebRTC extends EventEmitter {
     try {
       const stream = await this.openMediaDevices({ "video": { width: { ideal: 1280 }, height: { ideal: 1024 } }, "audio": { "echoCancellation": true } });
       console.log("Got MediaStream:", stream);
+
+      stream.getTracks().forEach(track => this._peerConnection.addTrack(track, stream));
+
       this._deviceSettings = { ...this._deviceSettings, localStream: stream, hasCameraAccess: true, hasMicrophoneAccess: true };
 
-      stream.getTracks().forEach(track => this._peerConnection.addTrack(track));
       this.emit("onDeviceUpdated", this._deviceSettings);
     } catch (error) {
       console.error("Error accessing media devices", error);
@@ -52,7 +54,7 @@ class WebRTC extends EventEmitter {
 
   public async createOffer(): Promise<RTCSessionDescriptionInit> {
     const offer = await this._peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
-    await this._peerConnection.setLocalDescription(offer);
+    await this._peerConnection.setLocalDescription(new RTCSessionDescription(offer));
 
     return offer;
   };

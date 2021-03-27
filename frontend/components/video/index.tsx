@@ -17,10 +17,6 @@ interface IProps {
 const Video: FunctionComponent<IProps> = (props) => {
   const { type, stream, hasCameraAccess, hasMicrophoneAccess, onToggleCamera, onToggleMicrophone } = props;
 
-  if (type === "remote") {
-    console.log(stream, "REMOTE STREAM");
-  }
-
   const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
