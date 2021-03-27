@@ -1,24 +1,27 @@
-import React, { FunctionComponent, useEffect, useRef, useMemo } from "react";
+import React, { FunctionComponent, useEffect, useRef } from "react";
 import cn from "classnames";
 import Camera from "../../assets/video.svg";
 import CameraOff from "../../assets/no-video.svg";
 import Microphone from "../../assets/microphone.svg";
 import MicrophoneOff from "../../assets/no-microphone.svg";
-import { MediaTracks } from "../../features/chat/types";
 import css from "./index.module.css";
-interface Props {
+interface IProps {
   type: "local" | "remote";
   stream: MediaStream | null;
-  toggleTrack?(type: MediaTracks): void;
+  hasCameraAccess?: boolean;
+  hasMicrophoneAccess?: boolean;
+  onToggleCamera?(): void;
+  onToggleMicrophone?(): void;
 }
 
-const Video: FunctionComponent<Props> = (props) => {
-  const { type, stream, toggleTrack } = props;
+const Video: FunctionComponent<IProps> = (props) => {
+  const { type, stream, hasCameraAccess, hasMicrophoneAccess, onToggleCamera, onToggleMicrophone } = props;
+
+  if (type === "remote") {
+    console.log(stream, "REMOTE STREAM");
+  }
 
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const isVideoEnabled = stream?.getVideoTracks()[0].enabled;
-  const isAudioEnabled = stream?.getAudioTracks()[0].enabled;
   
   useEffect(() => {
     if (videoRef && videoRef.current && stream) {
@@ -31,15 +34,15 @@ const Video: FunctionComponent<Props> = (props) => {
       <video autoPlay playsInline controls={false} ref={videoRef} />
       {type === "local" ? (
       <div className={css.Controls}>
-        {isVideoEnabled ? (
-          <Camera onClick={() => toggleTrack && toggleTrack(MediaTracks.Video)} />
+        {hasCameraAccess ? (
+          <Camera onClick={() => onToggleCamera && onToggleCamera()} />
         ) : (
-          <CameraOff onClick={() => toggleTrack && toggleTrack(MediaTracks.Video)} />
+          <CameraOff onClick={() => onToggleCamera && onToggleCamera()} />
         )}
-        {isAudioEnabled ? (
-          <Microphone onClick={() => toggleTrack && toggleTrack(MediaTracks.Audio)} />
+        {hasMicrophoneAccess ? (
+          <Microphone onClick={() => onToggleMicrophone && onToggleMicrophone()} />
         ) : (
-          <MicrophoneOff onClick={() => toggleTrack && toggleTrack(MediaTracks.Audio)} />
+          <MicrophoneOff onClick={() => onToggleMicrophone && onToggleMicrophone()} />
         )}
       </div>) : undefined}
     </div>

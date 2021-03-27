@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
 import { EventEmitter } from "events";
 import { v4 as uuidv4 } from "uuid";
-import { getLastItem } from "./helpers";
 import { Session, User } from "./types";
 
 export class Roulette extends EventEmitter {
@@ -70,7 +69,6 @@ export class Roulette extends EventEmitter {
   }
 
   searchPartner(socket: Socket): User | undefined {
-    // return getLastItem(this.waiting);
     let partner;
     this.waiting.forEach(user => {
       if (user.socket.id !== socket.id && user.isSearching) {

@@ -1,21 +1,28 @@
 import React, { FunctionComponent } from "react";
 import Video from "../../../components/video";
-import { MediaTracks } from "../types";
+import { IDeviceSettings } from "../../../lib/webrtc";
 import css from "./index.module.css";
 
-interface Props {
-  localStream: MediaStream | null;
-  remoteStream: MediaStream | null;
-  toggleTrack(type: MediaTracks): void;
+interface IProps {
+  deviceSettings: IDeviceSettings;
+  onToggleCamera(): void;
+  onToggleMicrophone(): void;
 }
 
-const VideoArea: FunctionComponent<Props> = (props) => {
-  const { localStream, remoteStream, toggleTrack } = props;
+const VideoArea: FunctionComponent<IProps> = (props) => {
+  const { deviceSettings, onToggleCamera, onToggleMicrophone } = props;
 
   return (
     <div className={css.Container}>
-      <Video type="remote" stream={remoteStream} />
-      <Video type="local" stream={localStream} toggleTrack={toggleTrack} />
+      <Video type="remote" stream={deviceSettings.remoteStream} />
+      <Video 
+        type="local" 
+        stream={deviceSettings.localStream}
+        hasCameraAccess={deviceSettings.hasCameraAccess}
+        hasMicrophoneAccess={deviceSettings.hasMicrophoneAccess} 
+        onToggleCamera={onToggleCamera} 
+        onToggleMicrophone={onToggleMicrophone} 
+      />
     </div>
   )
 }

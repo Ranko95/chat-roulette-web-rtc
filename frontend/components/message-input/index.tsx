@@ -3,14 +3,14 @@ import cn from "classnames";
 import Scrollbars from "react-custom-scrollbars";
 import css from "./index.module.css";
 
-interface Props {
+interface IProps {
   value: string;
   placeholder: string;
   onInput(e: React.ChangeEvent<HTMLDivElement>): void;
   onKeyPress(e: React.KeyboardEvent<HTMLDivElement>): void;
 }
 
-const MessageInput = forwardRef<HTMLInputElement, Props>((props, ref) => {
+const MessageInput = forwardRef<HTMLInputElement, IProps>((props, ref) => {
   const { value, placeholder, onInput, onKeyPress } = props;
 
   const [isFocused, setIsFocused] = useState<boolean>(false);

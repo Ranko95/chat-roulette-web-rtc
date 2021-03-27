@@ -3,12 +3,12 @@ import cn from "classnames";
 import { TextTypes } from "./types";
 import css from "./index.module.css";
 
-interface Props {
+interface IProps {
   type: TextTypes;
   className?: string;
 }
 
-const Text: FunctionComponent<Props> = (props) => {
+const Text: FunctionComponent<IProps> = (props) => {
   const { type, className, children } = props;
 
   const titleClassName = cn(

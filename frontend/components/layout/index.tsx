@@ -2,11 +2,11 @@ import React, { FunctionComponent } from "react";
 import Header from "./header";
 import css from "./index.module.css";
 
-interface Props {
+interface IProps {
   withHeader?: boolean;
 }
 
-const Layout: FunctionComponent<Props> = (props) => {
+const Layout: FunctionComponent<IProps> = (props) => {
   const { withHeader, children } = props;
 
   return (

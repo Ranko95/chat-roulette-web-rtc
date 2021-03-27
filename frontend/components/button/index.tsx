@@ -2,15 +2,14 @@ import React, { FunctionComponent } from "react";
 import cn from "classnames";
 import { ButtonTypes } from "./types";
 import css from "./index.module.css";
-
-interface Props {
+interface IProps {
   type: ButtonTypes;
   onClick?(): void;
   disabled?: boolean;
   className?: string;
 }
 
-const Button: FunctionComponent<Props> = (props) => {
+const Button: FunctionComponent<IProps> = (props) => {
   const { type, onClick, disabled, className, children } = props;
 
   const buttonClassName = cn(

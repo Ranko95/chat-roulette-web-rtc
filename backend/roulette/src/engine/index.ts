@@ -10,7 +10,7 @@ function runServer() {
 
   const server = http.createServer(app);
   
-  const io = runSocketServer(server);
+  runSocketServer(server);
   runHttpServer(app);
   
   

@@ -3,11 +3,11 @@ import { Context as RouletteContext } from "../../../../context/roulette";
 import Button from "../../../../components/button";
 import css from "./index.module.css";
 
-interface Props {
+interface IProps {
   onStart(): void;
 }
 
-const Controls: FunctionComponent<Props> = (props) => {
+const Controls: FunctionComponent<IProps> = (props) => {
   const { onStart } = props;
 
   const { socket, sessionId, isRouletteStarted, setIsRouletteStarted } = useContext(RouletteContext);

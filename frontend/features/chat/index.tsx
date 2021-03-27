@@ -1,70 +1,65 @@
 import React, { FunctionComponent, useState, useContext, useEffect } from "react";
-import { useUpdate } from "react-use";
 import { Context as RoulleteContext } from "../../context/roulette";
 import TextArea from "./text-area";
 import VideoArea from "./video-area";
-import { MediaTracks } from "./types";
+import { IDeviceSettings } from "../../lib/webrtc";
 import css from "./index.module.css";
+
+const initialDeviceSettingsState = {
+  localStream: null,
+  remoteStream: null,
+  hasCameraAccess: false,
+  hasMicrophoneAccess: false,
+};
 
 const Chat: FunctionComponent = () => {
   const { 
     socket,
-    peerConnection, 
-    localStream,
-    remoteStream, 
-    // setLocalStream,
-    setStream
+    webRTC,
   } = useContext(RoulleteContext);
 
-  const forceUpdate = useUpdate();
-
-  const openMediaDevices = async (constraints: MediaStreamConstraints) => {
-    return await navigator.mediaDevices.getUserMedia(constraints);
-  };
-
-  const aquireDevices = async () => {
-    try {
-      const stream = await openMediaDevices({ "video": true, "audio": { "echoCancellation": true } });
-      console.log("Got MediaStream:", stream);
-      setStream(stream, "local");
-  
-      if (peerConnection) {
-        stream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, stream);
-        });
-      }
-    } catch (error) {
-      console.error("Error accessing media devices", error);
-    }
-
-  }
+  const [deviceSettings, setDeviceSettings] = useState<IDeviceSettings>(initialDeviceSettingsState);
 
   const handleStart = async () => {
-    if (!localStream) {
-      await aquireDevices();
+    if (!deviceSettings.localStream) {
+      await webRTC?.aquireDevices();
     }
 
     if (socket) {
       socket.emit("start");
     }
-  }
+  };
 
-  const toggleTrack = (type: MediaTracks): void => {
-    if (!localStream) {
-      aquireDevices();
+  const onToggleCamera = () => {
+    if (!webRTC) {
       return;
     }
-    
-    localStream.getTracks()
-      .filter(track => track.kind === type)
-      .forEach(track => track.enabled = !track.enabled);
 
-      forceUpdate();
+    webRTC.toggleCamera();
   };
+
+  const onToggleMicrophone = () => {
+    if (!webRTC) {
+      return;
+    }
+
+    webRTC.toggleMicrophone();
+  };
+
+  const handleUpdate = (deviceSettings: IDeviceSettings) => {
+    console.log("onDeviceUpdated", deviceSettings)
+    setDeviceSettings(deviceSettings);
+  };
+
+  useEffect(() => {
+    if (webRTC) {
+      webRTC.on("onDeviceUpdated", handleUpdate);
+    }
+  }, [webRTC]);
 
   return (
     <div className={css.Container}>
-      <VideoArea localStream={localStream} remoteStream={remoteStream} toggleTrack={toggleTrack} />
+      <VideoArea deviceSettings={deviceSettings} onToggleCamera={onToggleCamera} onToggleMicrophone={onToggleMicrophone} />
       <TextArea onStart={handleStart} />
     </div>
   )

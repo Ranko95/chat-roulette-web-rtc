@@ -6,6 +6,7 @@ import Button from "../../../../components/button";
 import Text from "../../../../components/text";
 import MessageInput from "../../../../components/message-input";
 import css from "./index.module.css";
+
 const TextChat: FunctionComponent = () => {
   const [value, setValue] = useState<string>("");
 
