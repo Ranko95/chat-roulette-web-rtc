@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import { iceServers } from "../../consts";
 
 const CONFIGURATION = {
-  'iceServers': iceServers
+  iceServers: iceServers,
 };
 
 export interface IDeviceSettings {
@@ -10,10 +10,11 @@ export interface IDeviceSettings {
   remoteStream: MediaStream | null;
   hasCameraAccess: boolean;
   hasMicrophoneAccess: boolean;
+  isBlocked: boolean;
 }
 
 enum Events {
-  DEVICE_UPDATED = "onDeviceUpdated"
+  DEVICE_UPDATED = "onDeviceUpdated",
 }
 
 type EventsType = `${Events}`;
@@ -30,34 +31,46 @@ class WebRTC extends EventEmitter {
       remoteStream: null,
       hasCameraAccess: false,
       hasMicrophoneAccess: false,
-    }
+      isBlocked: false,
+    };
   }
 
   public async openMediaDevices(constraints: MediaStreamConstraints): Promise<MediaStream> {
     return await navigator.mediaDevices.getUserMedia(constraints);
-  };
+  }
 
   public async aquireDevices(): Promise<void> {
     try {
-      const stream = await this.openMediaDevices({ "video": { width: { ideal: 1280 }, height: { ideal: 1024 } }, "audio": { "echoCancellation": true } });
+      const stream = await this.openMediaDevices({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: { echoCancellation: true },
+      });
       console.log("Got MediaStream:", stream);
 
-      stream.getTracks().forEach(track => this._peerConnection.addTrack(track, stream));
+      stream.getTracks().forEach((track) => this._peerConnection.addTrack(track, stream));
 
-      this._deviceSettings = { ...this._deviceSettings, localStream: stream, hasCameraAccess: true, hasMicrophoneAccess: true };
+      this._deviceSettings = {
+        ...this._deviceSettings,
+        localStream: stream,
+        hasCameraAccess: true,
+        hasMicrophoneAccess: true,
+      };
 
       this.emit("onDeviceUpdated", this._deviceSettings);
     } catch (error) {
+      this._deviceSettings = { ...this._deviceSettings, isBlocked: true };
+      this.emit("onDeviceUpdated", this._deviceSettings);
+
       console.error("Error accessing media devices", error);
     }
-  };
+  }
 
   public async createOffer(): Promise<RTCSessionDescriptionInit> {
     const offer = await this._peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
     await this._peerConnection.setLocalDescription(new RTCSessionDescription(offer));
 
     return offer;
-  };
+  }
 
   public async receiveOffer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
     this._peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -65,12 +78,12 @@ class WebRTC extends EventEmitter {
     await this._peerConnection.setLocalDescription(answer);
 
     return answer;
-  };
+  }
 
   public async receiveAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
     await this._peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-  };
-  
+  }
+
   public async receiveIceCandidate(idceCandidate: RTCIceCandidate): Promise<void> {
     await this._peerConnection.addIceCandidate(new RTCIceCandidate(idceCandidate));
   }
@@ -94,7 +107,7 @@ class WebRTC extends EventEmitter {
       return;
     }
 
-    this._deviceSettings.localStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+    this._deviceSettings.localStream.getVideoTracks().forEach((track) => (track.enabled = !track.enabled));
     const { hasCameraAccess } = this._deviceSettings;
     this._deviceSettings = { ...this._deviceSettings, hasCameraAccess: !hasCameraAccess };
     this.onEmittingEvent("onDeviceUpdated");
@@ -106,15 +119,16 @@ class WebRTC extends EventEmitter {
       return;
     }
 
-    this._deviceSettings.localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+    this._deviceSettings.localStream.getAudioTracks().forEach((track) => (track.enabled = !track.enabled));
     const { hasMicrophoneAccess } = this._deviceSettings;
     this._deviceSettings = { ...this._deviceSettings, hasMicrophoneAccess: !hasMicrophoneAccess };
     this.onEmittingEvent("onDeviceUpdated");
   }
 
   private onEmittingEvent(event: EventsType): void {
-    if (event === "onDeviceUpdated") {
+    if (event === Events.DEVICE_UPDATED) {
       this.emit(event, this._deviceSettings);
+      return;
     }
   }
 

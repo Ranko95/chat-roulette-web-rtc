@@ -1,11 +1,16 @@
 export const iceServers = [
-  {urls:'stun:stun.l.google.com:19302'},
+  { urls: "stun:stun.l.google.com:19302" },
   // {urls:'stun:stun1.l.google.com:19302'},
   // {urls:'stun:stun2.l.google.com:19302'},
+  // {
+  //   urls: 'turn:numb.viagenie.ca',
+  //   credential: 'muazkh',
+  //   username: 'webrtc@live.com'
+  // },
   {
-    urls: 'turn:numb.viagenie.ca',
-    credential: 'muazkh',
-    username: 'webrtc@live.com'
+    urls: "turn:numb.viagenie.ca",
+    credential: "abcdyuhugii",
+    username: "ranko2095@gmail.com",
   },
   // {
   //   urls: 'turn:192.158.29.39:3478?transport=udp',

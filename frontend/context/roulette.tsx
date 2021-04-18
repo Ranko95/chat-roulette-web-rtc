@@ -120,9 +120,6 @@ export const Provider: FunctionComponent = (props) => {
   useEffect(() => {
     const webRTC = new WebRTC();
     setWebRTC(webRTC);
-    // if (!socket) {
-    //   connect();
-    // }
   }, []);
 
   useEffect(() => {
