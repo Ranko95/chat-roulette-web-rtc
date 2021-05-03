@@ -1,14 +1,18 @@
-version: "3.3"
+version: "3.7"
 services:
   frontend:
     build: ./frontend
-    ports: 
-      - "3000:3000"
     volumes:
       - ./frontend:/usr/src/app
   roulette:
-    build: ./backend/roulette
-    ports:
-      - "5000:5000"
+    build:
+      context: ./backend
+      dockerfile: ./roulette/Dockerfile
     volumes:
+      - ./backend/common:/usr/src/app/common
       - ./backend/roulette:/usr/src/app
+
+  proxy:
+    build: ./backend/proxy
+    ports:
+      - "3000:80"

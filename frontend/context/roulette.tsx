@@ -41,7 +41,7 @@ export const Provider: FunctionComponent = (props) => {
   };
 
   const connect = () => {
-    const socket = socketIOClient("http://localhost:5000", { transports: ["websocket"], forceNew: true });
+    const socket = socketIOClient("/", { path: "/api/v1/roulette", transports: ["websocket"], forceNew: true });
 
     socket.on("connect", () => {
       setSocket(socket);

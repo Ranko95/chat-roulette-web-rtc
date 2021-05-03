@@ -5,7 +5,7 @@ import { ChatMessage, RTCIceCandidateOptions } from "../types";
 
 export function runServer(server: Server) {
   // @ts-ignore
-  const io = socketIO(server, { transports: ["websocket"] });
+  const io = socketIO(server, { path: "/api/v1/roulette", transports: ["websocket"] });
 
   const roulette = new Roulette();
   roulette.on("session-created", ({ roomId, masterId }) => {

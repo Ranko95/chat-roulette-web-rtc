@@ -5,11 +5,12 @@ import VideoArea from "./video-area";
 import { IDeviceSettings } from "../../lib/webrtc";
 import css from "./index.module.css";
 
-const initialDeviceSettingsState = {
+const initialDeviceSettingsState: IDeviceSettings = {
   localStream: null,
   remoteStream: null,
   hasCameraAccess: false,
   hasMicrophoneAccess: false,
+  isBlocked: false
 };
 
 const Chat: FunctionComponent = () => {
