@@ -1,14 +1,17 @@
 import http from "http";
 import express from "express";
 
-const readConfig = require("common").config;
+import { config } from "common";
 
 import { runServer as runSocketServer } from "./socket";
 import { runServer as runHttpServer } from "./http";
 
+import { ICustomGlobal } from "../types";
+
+declare const global: ICustomGlobal;
+
 async function setupGlobals() {
-  //@ts-ignore
-  global.config = await readConfig();
+  global.config = await config.readConfig();
 }
 
 function runServer() {

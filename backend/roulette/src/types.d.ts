@@ -21,3 +21,7 @@ export type RTCIceCandidateOptions = {
   type: "ice-candidate",
   candidate: RTCIceCandidate
 }
+
+export interface ICustomGlobal extends NodeJS.Global {
+  config: any,
+}
