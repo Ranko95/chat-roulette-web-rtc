@@ -9,7 +9,6 @@ services:
       context: ./backend
       dockerfile: ./roulette/Dockerfile
     volumes:
-      - ./backend/common:/usr/src/app/common
       - ./backend/roulette:/usr/src/app
 
   proxy:

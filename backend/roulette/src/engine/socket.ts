@@ -1,11 +1,14 @@
-import { Server } from "http";
-import socketIO, { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
+
 import { Roulette } from "../roulette";
+import vars from "../config/vars";
+
 import { ChatMessage, RTCIceCandidateOptions } from "../types";
 
-export function runServer(server: Server) {
-  // @ts-ignore
-  const io = socketIO(server, { path: "/api/v1/roulette", transports: ["websocket"] });
+const { apiRoot } = vars;
+
+export function runServer(): Server {
+  const io = new Server({ path: `${apiRoot}/roulette`, transports: ["websocket"] });
 
   const roulette = new Roulette();
   roulette.on("session-created", ({ roomId, masterId }) => {

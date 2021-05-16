@@ -13,12 +13,12 @@ export class Roulette extends EventEmitter {
     this.waiting = new Set();
   }
 
-  initUser(socket: Socket): void {
+  public initUser(socket: Socket): void {
     this.waiting.add({ socket: socket, isSearching: false });
     console.log(this.waiting);
   }
 
-  start(socket: Socket): void {
+  public start(socket: Socket): void {
     this.waiting.forEach(user => {
       if (user.socket === socket && !user.isSearching) {
         user.isSearching = true;
@@ -50,7 +50,7 @@ export class Roulette extends EventEmitter {
     console.log(this.sessions);
   }
 
-  stop(socket: Socket): void {
+  public stop(socket: Socket): void {
     this.waiting.forEach(user => {
       if (user.socket.id === socket.id && user.isSearching) {
         user.isSearching = false;
@@ -59,7 +59,7 @@ export class Roulette extends EventEmitter {
     console.log(this.waiting);
   }
   
-  disconnect(socket: Socket): void {
+  public disconnect(socket: Socket): void {
     this.waiting.forEach(user => {
       if (user.socket.id === socket.id) {
         this.waiting.delete(user);
@@ -68,7 +68,7 @@ export class Roulette extends EventEmitter {
     console.log(this.waiting);
   }
 
-  searchPartner(socket: Socket): User | undefined {
+  private searchPartner(socket: Socket): User | undefined {
     let partner;
     this.waiting.forEach(user => {
       if (user.socket.id !== socket.id && user.isSearching) {
@@ -80,7 +80,7 @@ export class Roulette extends EventEmitter {
     return partner;
   }
   
-  updateUserStatus(user: User, roomId: string): void {
+  private updateUserStatus(user: User, roomId: string): void {
     user.roomId = roomId;
     user.isSearching = false;
   }

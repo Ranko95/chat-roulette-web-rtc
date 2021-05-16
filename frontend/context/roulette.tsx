@@ -1,10 +1,14 @@
 import React, { FunctionComponent, useState, useEffect } from "react";
 import socketIOClient, { Socket } from "socket.io-client";
-import WebRTC from "../lib/webrtc";
+
+import { iceServers } from "../consts/ice-server";
+
+import { IWebRtcConnectionConstructorData } from "../lib/webrtc/WebRtcConnection";
+import { WebRtcController } from "../lib/webrtc/WebRtcController";
 
 export interface ContextValue {
   socket: typeof Socket | null;
-  webRTC: WebRTC | null;
+  webRTC: WebRtcController | null;
   sessionId: string | null;
   isMaster: boolean;
   isRouletteStarted: boolean;
@@ -25,20 +29,13 @@ export const Provider: FunctionComponent = (props) => {
 
   const [socket, setSocket] = useState<typeof Socket | null>(null);
 
-  const [webRTC, setWebRTC] = useState<WebRTC | null>(null);
+  const [webRTC, setWebRTC] = useState<WebRtcController | null>(null);
   
   const [isRouletteStarted, setIsRouletteStarted] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isMaster, setIsMaster] = useState<boolean>(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-
-  const makeCall = async () => {
-    if (socket && webRTC) {
-      const offer = await webRTC.createOffer();
-      socket.emit("signaling-channel", offer);
-    }
-  };
 
   const connect = () => {
     const socket = socketIOClient("/", { path: "/api/v1/roulette", transports: ["websocket"], forceNew: true });
@@ -66,17 +63,23 @@ export const Provider: FunctionComponent = (props) => {
     socket.on("peer-connection-message", async (message: any) => {
       console.log("MESSAGE", message);
 
-      if (message.type === "offer" && webRTC) {
-        const answer = await webRTC.receiveOffer(message);
-        socket.emit("signaling-channel", answer);
+      if (!webRTC) {
+        return;
       }
 
-      if (message.type === "answer" && webRTC) {
-        await webRTC.receiveAnswer(message);
+      if (message.type === "ice-candidate") {
+        await webRTC.addIceCandidate({ candidate: message.candidate });
+        return;
       }
 
-      if (message.type === "ice-candidate" && webRTC) {
-        await webRTC.receiveIceCandidate(message.candidate);
+      if (message.type === "sdp") {
+        if (isMaster) {
+          await webRTC.addAnswer({ answerSdp: message.sdp });
+          return;
+        }
+
+        await webRTC.processOffer({ offerSdp: message.sdp });
+        return;
       }
     });
 
@@ -85,42 +88,46 @@ export const Provider: FunctionComponent = (props) => {
     });
   };
 
-  const handleICECandidateEvent = (event: RTCPeerConnectionIceEvent): void => {
-    if (event.candidate && socket) {
-      console.log("RECEIVED ICE CANDIDATE")
-      socket.emit("signaling-channel", {type: "ice-candidate", candidate: event.candidate });
+  const handleGotOffer = ({ sdp }: { sdp: string }) => {
+    if (socket) {
+      socket.emit("signaling-channel", { type: "sdp", sdp });
     }
   };
-
-  const handleConnectionStateChange = (event: any): void => {
-    if (!webRTC) {
-      return;
+  
+  const handleGotIceCandidate = ({ candidate } : { candidate: RTCIceCandidate }) => {
+    if (socket) {
+      socket.emit("signaling-channel", { type: "ice-candidate", candidate });
     }
+  };  
 
-    const peerConnection = webRTC.peerConnection;
-    if (peerConnection && peerConnection.connectionState === "connected") {
-      console.log("PEERS CONNECTED!!!!");
-    }
+  const handleGotStream = ({ stream }: { stream: MediaStream }) => {
+    console.log(stream, "GOT STREAM");
   };
 
-  const handleAddingTrack = (event: RTCTrackEvent): void => {
-    if (!webRTC) {
-      return;
-    }
+  const handleIceConnectionStateDisconnected = () => {
 
-    webRTC.addRemoteMediaTrack(event.track);
+  };
+
+  const handleIceConnectionStateFailed = () => {
+
   };
 
   useEffect(() => {
-    if (sessionId && isMaster) {
-      makeCall();
-    }
-  }, [sessionId, isMaster]);
+    if (sessionId && webRTC) {
+      const connectionData: IWebRtcConnectionConstructorData = {
+        iceServers,
+        type: isMaster ? "caller" : "callee",
+        stream: webRTC.localStream,
+        onGotOffer: handleGotOffer,
+        onGotCandidate: handleGotIceCandidate,
+        onGotStream: handleGotStream,
+        onIceConnectionStateDisconnected: handleIceConnectionStateDisconnected,
+        onIceConnectionStateFailed: handleIceConnectionStateFailed,
+      };
 
-  useEffect(() => {
-    const webRTC = new WebRTC();
-    setWebRTC(webRTC);
-  }, []);
+      webRTC.createConnection(connectionData);
+    }
+  }, [sessionId, webRTC]);
 
   useEffect(() => {
     if (webRTC && !socket) {
@@ -129,13 +136,9 @@ export const Provider: FunctionComponent = (props) => {
   }, [webRTC]);
 
   useEffect(() => {
-    if (webRTC && socket) {
-      webRTC.peerConnection.createDataChannel("channel");
-      webRTC.peerConnection.onicecandidate = handleICECandidateEvent;
-      webRTC.peerConnection.onconnectionstatechange = handleConnectionStateChange;
-      webRTC.peerConnection.ontrack = handleAddingTrack;
-    }
-  }, [webRTC, socket]);
+    const webRTC = new WebRtcController();
+    setWebRTC(webRTC);
+  }, []);
 
   return (
     <Context.Provider
