@@ -1,4 +1,5 @@
 import { CONNECTION_TYPE } from "../../consts/webrtc/CONNECTION_TYPE";
+import { SDP, sdpType } from "../../context/roulette";
 
 export type connectionType = `${CONNECTION_TYPE}`;
 
@@ -7,7 +8,7 @@ export interface IWebRtcConnectionConstructorData {
   type: connectionType;
   stream: MediaStream | null;
 
-  onGotOffer({ sdp }: { sdp?: string }): void;
+  onGotOffer(data: { sdp?: string, type: sdpType }): void;
   onGotStream({ stream }: { stream: MediaStream }): void;
   onGotCandidate({ candidate } : { candidate: RTCIceCandidate }): void;
   onIceConnectionStateDisconnected(): void;
@@ -22,6 +23,7 @@ export class WebRtcConnection {
   type: connectionType;
   candidateQueue: RTCIceCandidate[];
   stream: MediaStream | null;
+  remoteStream: MediaStream | null;
 
   onGotStream;
   onGotOffer;
@@ -34,6 +36,7 @@ export class WebRtcConnection {
 
     this.iceServers = data.iceServers;
     this.stream = data.stream;
+    this.remoteStream = null;
     this.type = data.type;
 
     this.onGotStream = data.onGotStream;
@@ -70,9 +73,10 @@ export class WebRtcConnection {
     }
 
     this.peerConnection.ontrack = (e) => {
-      this.stream = this.stream || new MediaStream();
-      this.stream.addTrack(e.track);
-      this.onGotStream({ stream: this.stream });
+      console.log("onTrack", e);
+      this.remoteStream = this.remoteStream || new MediaStream();
+      this.remoteStream.addTrack(e.track);
+      this.onGotStream({ stream: this.remoteStream });
     }
   }
 
@@ -95,7 +99,7 @@ export class WebRtcConnection {
     });
     await this.peerConnection.setLocalDescription(offer);
     console.log("create offer", offer);
-    this.onGotOffer({ sdp: offer.sdp });
+    this.onGotOffer({ sdp: offer.sdp, type: SDP.OFFER });
   }
 
   public async processOffer(sdp: string): Promise<void> {
@@ -104,6 +108,14 @@ export class WebRtcConnection {
     }
 
     console.log("process offer", sdp);
+
+    if (this.stream) {
+      this.stream.getTracks().map((track) => {
+        console.log("add track", track);
+        this.peerConnection?.addTrack(track);
+      });
+    }
+    
     const offer = new RTCSessionDescription({ type: "offer", sdp });
     await this.peerConnection.setRemoteDescription(offer);
     this.sdpAnswerSet = true;
@@ -115,7 +127,7 @@ export class WebRtcConnection {
 
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
-    this.onGotOffer({ sdp: answer.sdp });
+    this.onGotOffer({ sdp: answer.sdp, type: SDP.ANSWER });
   }
 
   public async addAnswer(sdp: string): Promise<void> {

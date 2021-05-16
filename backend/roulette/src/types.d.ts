@@ -16,8 +16,3 @@ export type ChatMessage = {
   message: string;
   sessionId: string;
 }
-
-export type RTCIceCandidateOptions = {
-  type: "ice-candidate",
-  candidate: RTCIceCandidate
-}

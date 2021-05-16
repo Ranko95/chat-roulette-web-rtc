@@ -3,7 +3,7 @@ import { Socket, Server } from 'socket.io';
 import { Roulette } from "../roulette";
 import vars from "../config/vars";
 
-import { ChatMessage, RTCIceCandidateOptions } from "../types";
+import { ChatMessage } from "../types";
 
 const { apiRoot } = vars;
 
@@ -31,7 +31,7 @@ export function runServer(): Server {
       roulette.stop(socket);
     });
 
-    socket.on("signaling-channel", (message: RTCOfferOptions | RTCAnswerOptions | RTCIceCandidateOptions) => {
+    socket.on("signaling-channel", (message) => {
       console.log(message);
       socket.broadcast.emit("peer-connection-message", message);
     });

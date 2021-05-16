@@ -125,6 +125,11 @@ export class WebRtcController extends EventEmitter {
     await this.connection.addAnswer(answerSdp);
   }
 
+  public addRemoteStream({ stream }: { stream: MediaStream | null }): void {
+    this.remoteStream = stream;
+    this.onEmittingEvent(Events.REMOTE_STREAM_UPDATED);
+  }
+
   public stopConnection(): boolean {
     if (!this.connection) {
       return false;

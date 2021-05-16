@@ -28,19 +28,20 @@ const Video: FunctionComponent<IProps> = (props) => {
   return (
     <div className={cn(css.Container, { [css.ContainerLocal]: type === "local", [css.ContainerRemote]: type === "remote" })}>
       <video autoPlay playsInline controls={false} ref={videoRef} />
-      {type === "local" ? (
-      <div className={css.Controls}>
-        {hasCameraAccess ? (
-          <Camera onClick={() => onToggleCamera && onToggleCamera()} />
-        ) : (
-          <CameraOff onClick={() => onToggleCamera && onToggleCamera()} />
-        )}
-        {hasMicrophoneAccess ? (
-          <Microphone onClick={() => onToggleMicrophone && onToggleMicrophone()} />
-        ) : (
-          <MicrophoneOff onClick={() => onToggleMicrophone && onToggleMicrophone()} />
-        )}
-      </div>) : undefined}
+      {type === "local" && (
+        <div className={css.Controls}>
+          {hasCameraAccess ? (
+            <Camera onClick={() => onToggleCamera && onToggleCamera()} />
+          ) : (
+            <CameraOff onClick={() => onToggleCamera && onToggleCamera()} />
+          )}
+          {hasMicrophoneAccess ? (
+            <Microphone onClick={() => onToggleMicrophone && onToggleMicrophone()} />
+          ) : (
+            <MicrophoneOff onClick={() => onToggleMicrophone && onToggleMicrophone()} />
+          )}
+        </div>
+      )}
     </div>
   )
 }

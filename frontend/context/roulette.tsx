@@ -2,6 +2,7 @@ import React, { FunctionComponent, useState, useEffect } from "react";
 import socketIOClient, { Socket } from "socket.io-client";
 
 import { iceServers } from "../consts/ice-server";
+import { CONNECTION_TYPE } from "../consts/webrtc/CONNECTION_TYPE";
 
 import { IWebRtcConnectionConstructorData } from "../lib/webrtc/WebRtcConnection";
 import { WebRtcController } from "../lib/webrtc/WebRtcController";
@@ -21,6 +22,14 @@ export type ChatMessage = {
   message: string;
   sessionId: string;
 }
+
+export enum SDP {
+  OFFER = "offer",
+  ANSWER = "answer",
+  ICE_CANDIDATE = "ice-candidate",
+}
+
+export type sdpType = `${SDP}`;
 
 export const Context = React.createContext<ContextValue>({} as ContextValue);
 
@@ -60,25 +69,23 @@ export const Provider: FunctionComponent = (props) => {
       }
     });
 
-    socket.on("peer-connection-message", async (message: any) => {
-      console.log("MESSAGE", message);
+    socket.on("peer-connection-message", async (data: any) => {
+      console.log("MESSAGE", data);
 
       if (!webRTC) {
         return;
       }
 
-      if (message.type === "ice-candidate") {
-        await webRTC.addIceCandidate({ candidate: message.candidate });
+      if (data.type === SDP.ICE_CANDIDATE) {
+        await webRTC.addIceCandidate({ candidate: data.candidate });
         return;
       }
-
-      if (message.type === "sdp") {
-        if (isMaster) {
-          await webRTC.addAnswer({ answerSdp: message.sdp });
-          return;
-        }
-
-        await webRTC.processOffer({ offerSdp: message.sdp });
+      if (data.type === SDP.ANSWER) {
+        await webRTC.addAnswer({ answerSdp: data.sdp });
+        return;
+      }
+      if (data.type === SDP.OFFER) {
+        await webRTC.processOffer({ offerSdp: data.sdp });
         return;
       }
     });
@@ -88,20 +95,25 @@ export const Provider: FunctionComponent = (props) => {
     });
   };
 
-  const handleGotOffer = ({ sdp }: { sdp: string }) => {
+  const handleGotOffer = (data: { sdp: string, type: sdpType }) => {
     if (socket) {
-      socket.emit("signaling-channel", { type: "sdp", sdp });
+      socket.emit("signaling-channel", data);
     }
   };
   
-  const handleGotIceCandidate = ({ candidate } : { candidate: RTCIceCandidate }) => {
+  const handleGotIceCandidate = ({ candidate } : { candidate: RTCIceCandidate, }) => {
     if (socket) {
-      socket.emit("signaling-channel", { type: "ice-candidate", candidate });
+      socket.emit("signaling-channel", { type: SDP.ICE_CANDIDATE, candidate });
     }
   };  
 
   const handleGotStream = ({ stream }: { stream: MediaStream }) => {
     console.log(stream, "GOT STREAM");
+    if (!webRTC) {
+      return;
+    }
+
+    webRTC.addRemoteStream({ stream });
   };
 
   const handleIceConnectionStateDisconnected = () => {
@@ -116,7 +128,7 @@ export const Provider: FunctionComponent = (props) => {
     if (sessionId && webRTC) {
       const connectionData: IWebRtcConnectionConstructorData = {
         iceServers,
-        type: isMaster ? "caller" : "callee",
+        type: isMaster ? CONNECTION_TYPE.CALLER : CONNECTION_TYPE.CALLEE,
         stream: webRTC.localStream,
         onGotOffer: handleGotOffer,
         onGotCandidate: handleGotIceCandidate,
