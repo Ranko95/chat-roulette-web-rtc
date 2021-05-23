@@ -10,26 +10,13 @@ interface IProps {
 const Controls: FunctionComponent<IProps> = (props) => {
   const { onStart } = props;
 
-  const { socket, sessionId, isRouletteStarted, setIsRouletteStarted } = useContext(RouletteContext);
-
-  const handleStop = () => {
-    if (socket) {
-      socket.emit("stopped");
-      setIsRouletteStarted(false);
-    }
-  };
-
-  const handleNext = () => {
-    if (socket) {
-      socket.emit("next");
-    }
-  };
+  const { sessionId, isRouletteStarted, handleStop, handleNext } = useContext(RouletteContext);
 
   return (
     <div className={css.Container}>
       {isRouletteStarted ? (
         <div className={css.ButtonsContainer}>
-          <Button type={!sessionId ? "grey" : "danger"} onClick={handleStop}>{sessionId ? "Disconnect" : "Stop"}</Button>
+          <Button type={sessionId ? "danger" : "grey"} onClick={handleStop}>{sessionId ? "Disconnect" : "Stop"}</Button>
           <Button type="blue" onClick={handleNext} disabled={!sessionId}>Next</Button>
         </div>
       ) : (

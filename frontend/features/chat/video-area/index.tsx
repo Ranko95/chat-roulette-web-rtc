@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from "react";
 import Video from "../../../components/video";
+import { VIDEO_OPTIONS } from "../../../consts/webrtc/VIDEO_TYPE";
 import { IDeviceSettings } from "../../../lib/webrtc/WebRtcController";
 import css from "./index.module.css";
 
@@ -16,9 +17,9 @@ const VideoArea: FunctionComponent<IProps> = (props) => {
 
   return (
     <div className={css.Container}>
-      <Video type="remote" stream={remoteStream} />
+      <Video type={VIDEO_OPTIONS.REMOTE} stream={remoteStream} />
       <Video 
-        type="local" 
+        type={VIDEO_OPTIONS.LOCAL} 
         stream={localStream}
         hasCameraAccess={deviceSettings.hasCameraAccess}
         hasMicrophoneAccess={deviceSettings.hasMicrophoneAccess} 

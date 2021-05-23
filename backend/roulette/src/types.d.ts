@@ -8,7 +8,7 @@ export type Session = {
 export type User = {
   socket: Socket;
   isSearching: boolean;
-  roomId?: string;
+  roomId: string | null; 
 }
 
 export type ChatMessage = {

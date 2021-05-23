@@ -7,14 +7,15 @@ import { CONNECTION_TYPE } from "../consts/webrtc/CONNECTION_TYPE";
 import { IWebRtcConnectionConstructorData } from "../lib/webrtc/WebRtcConnection";
 import { WebRtcController } from "../lib/webrtc/WebRtcController";
 
-export interface ContextValue {
+export interface IContextValue {
   socket: typeof Socket | null;
   webRTC: WebRtcController | null;
   sessionId: string | null;
   isMaster: boolean;
   isRouletteStarted: boolean;
   chatMessages: ChatMessage[];
-  setIsRouletteStarted(val: boolean): void;
+  handleStop(): void;
+  handleNext(): void;
 }
 
 export type ChatMessage = {
@@ -23,15 +24,15 @@ export type ChatMessage = {
   sessionId: string;
 }
 
-export enum SDP {
+export enum SDP_OPTIONS {
   OFFER = "offer",
   ANSWER = "answer",
   ICE_CANDIDATE = "ice-candidate",
 }
 
-export type sdpType = `${SDP}`;
+export type SdpType = `${SDP_OPTIONS}`;
 
-export const Context = React.createContext<ContextValue>({} as ContextValue);
+export const Context = React.createContext<IContextValue>({} as IContextValue);
 
 export const Provider: FunctionComponent = (props) => {
   const { children } = props;
@@ -57,7 +58,11 @@ export const Provider: FunctionComponent = (props) => {
     socket.on("started", () => {
       console.log("roulette has started");
       setIsRouletteStarted(true);
-    }); 
+    });
+    
+    socket.on("stopped", () => {
+      setIsRouletteStarted(false);
+    });
 
     socket.on("session-created", (data: { roomId: string, masterId: string }) => {
       if (data.roomId) {
@@ -69,6 +74,10 @@ export const Provider: FunctionComponent = (props) => {
       }
     });
 
+    socket.on("peers-disconnected", (data: { initiatorId: string }) => {
+      handleDisconnectFromRoulette({ isStarted: !(socket.id === data.initiatorId) });
+    });
+
     socket.on("peer-connection-message", async (data: any) => {
       console.log("MESSAGE", data);
 
@@ -76,15 +85,15 @@ export const Provider: FunctionComponent = (props) => {
         return;
       }
 
-      if (data.type === SDP.ICE_CANDIDATE) {
+      if (data.type === SDP_OPTIONS.ICE_CANDIDATE) {
         await webRTC.addIceCandidate({ candidate: data.candidate });
         return;
       }
-      if (data.type === SDP.ANSWER) {
+      if (data.type === SDP_OPTIONS.ANSWER) {
         await webRTC.addAnswer({ answerSdp: data.sdp });
         return;
       }
-      if (data.type === SDP.OFFER) {
+      if (data.type === SDP_OPTIONS.OFFER) {
         await webRTC.processOffer({ offerSdp: data.sdp });
         return;
       }
@@ -95,7 +104,31 @@ export const Provider: FunctionComponent = (props) => {
     });
   };
 
-  const handleGotOffer = (data: { sdp: string, type: sdpType }) => {
+  const handleStop = () => {
+    if (socket) {
+      socket.emit("stopped", { sessionId });
+      // setIsRouletteStarted(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (socket) {
+      socket.emit("next", { sessionId });
+    }
+  };
+
+  const handleDisconnectFromRoulette = ({ isStarted }: { isStarted: boolean }) => {
+    setSessionId(null);
+    setIsRouletteStarted(isStarted);
+    setIsMaster(false);
+    setChatMessages([]);
+    if (webRTC) {
+      webRTC.stopConnection();
+    }
+  };
+
+
+  const handleGotOffer = (data: { sdp: string, type: SdpType }) => {
     if (socket) {
       socket.emit("signaling-channel", data);
     }
@@ -103,7 +136,7 @@ export const Provider: FunctionComponent = (props) => {
   
   const handleGotIceCandidate = ({ candidate } : { candidate: RTCIceCandidate, }) => {
     if (socket) {
-      socket.emit("signaling-channel", { type: SDP.ICE_CANDIDATE, candidate });
+      socket.emit("signaling-channel", { type: SDP_OPTIONS.ICE_CANDIDATE, candidate });
     }
   };  
 
@@ -124,6 +157,10 @@ export const Provider: FunctionComponent = (props) => {
 
   };
 
+  const handleIceConnectionStateCompleted = () => {
+    console.log("ICE CONNECTION COMPLETED");
+  }
+
   useEffect(() => {
     if (sessionId && webRTC) {
       const connectionData: IWebRtcConnectionConstructorData = {
@@ -135,6 +172,7 @@ export const Provider: FunctionComponent = (props) => {
         onGotStream: handleGotStream,
         onIceConnectionStateDisconnected: handleIceConnectionStateDisconnected,
         onIceConnectionStateFailed: handleIceConnectionStateFailed,
+        onIceConnectionStateCompleted: handleIceConnectionStateCompleted,
       };
 
       webRTC.createConnection(connectionData);
@@ -161,7 +199,8 @@ export const Provider: FunctionComponent = (props) => {
         isMaster,
         isRouletteStarted,
         chatMessages,
-        setIsRouletteStarted,
+        handleStop,
+        handleNext,
       }}
     >
       {children}

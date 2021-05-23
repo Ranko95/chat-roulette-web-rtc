@@ -1,5 +1,5 @@
 import { CONNECTION_TYPE } from "../../consts/webrtc/CONNECTION_TYPE";
-import { SDP, sdpType } from "../../context/roulette";
+import { SDP_OPTIONS, SdpType } from "../../context/roulette";
 
 export type connectionType = `${CONNECTION_TYPE}`;
 
@@ -8,11 +8,12 @@ export interface IWebRtcConnectionConstructorData {
   type: connectionType;
   stream: MediaStream | null;
 
-  onGotOffer(data: { sdp?: string, type: sdpType }): void;
+  onGotOffer(data: { sdp?: string, type: SdpType }): void;
   onGotStream({ stream }: { stream: MediaStream }): void;
   onGotCandidate({ candidate } : { candidate: RTCIceCandidate }): void;
   onIceConnectionStateDisconnected(): void;
   onIceConnectionStateFailed(): void;
+  onIceConnectionStateCompleted(): void;
 }
 
 export class WebRtcConnection {
@@ -30,6 +31,7 @@ export class WebRtcConnection {
   onGotCandidate;
   onIceConnectionStateDisconnected;
   onIceConnectionStateFailed;
+  onIceConnectionStateCompleted;
 
   constructor(data: IWebRtcConnectionConstructorData) {
     this.peerConnection = null;
@@ -44,6 +46,7 @@ export class WebRtcConnection {
     this.onGotCandidate = data.onGotCandidate;
     this.onIceConnectionStateDisconnected = data.onIceConnectionStateDisconnected;
     this.onIceConnectionStateFailed = data.onIceConnectionStateFailed;
+    this.onIceConnectionStateCompleted = data.onIceConnectionStateCompleted;
 
     this.candidateQueue = [];
     this.sdpAnswerSet = false;
@@ -61,6 +64,9 @@ export class WebRtcConnection {
       }
       if (iceConnectionState === "failed") {
         this.onIceConnectionStateFailed();
+      }
+      if (iceConnectionState === "completed") {
+        this.onIceConnectionStateCompleted();
       }
     }
 
@@ -99,7 +105,7 @@ export class WebRtcConnection {
     });
     await this.peerConnection.setLocalDescription(offer);
     console.log("create offer", offer);
-    this.onGotOffer({ sdp: offer.sdp, type: SDP.OFFER });
+    this.onGotOffer({ sdp: offer.sdp, type: SDP_OPTIONS.OFFER });
   }
 
   public async processOffer(sdp: string): Promise<void> {
@@ -127,7 +133,7 @@ export class WebRtcConnection {
 
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
-    this.onGotOffer({ sdp: answer.sdp, type: SDP.ANSWER });
+    this.onGotOffer({ sdp: answer.sdp, type: SDP_OPTIONS.ANSWER });
   }
 
   public async addAnswer(sdp: string): Promise<void> {

@@ -4,9 +4,10 @@ import Camera from "../../assets/video.svg";
 import CameraOff from "../../assets/no-video.svg";
 import Microphone from "../../assets/microphone.svg";
 import MicrophoneOff from "../../assets/no-microphone.svg";
+import { VideoOptionsType, VIDEO_OPTIONS } from "../../consts/webrtc/VIDEO_TYPE";
 import css from "./index.module.css";
 interface IProps {
-  type: "local" | "remote";
+  type: VideoOptionsType;
   stream: MediaStream | null;
   hasCameraAccess?: boolean;
   hasMicrophoneAccess?: boolean;
@@ -25,10 +26,11 @@ const Video: FunctionComponent<IProps> = (props) => {
     }
   }, [stream]);
 
+
   return (
-    <div className={cn(css.Container, { [css.ContainerLocal]: type === "local", [css.ContainerRemote]: type === "remote" })}>
+    <div className={cn(css.Container, { [css.ContainerLocal]: type === VIDEO_OPTIONS.LOCAL, [css.ContainerRemote]: type === VIDEO_OPTIONS.REMOTE })}>
       <video autoPlay playsInline controls={false} ref={videoRef} />
-      {type === "local" && (
+      {type === VIDEO_OPTIONS.LOCAL && (
         <div className={css.Controls}>
           {hasCameraAccess ? (
             <Camera onClick={() => onToggleCamera && onToggleCamera()} />

@@ -10,11 +10,7 @@ const { apiRoot } = vars;
 export function runServer(): Server {
   const io = new Server({ path: `${apiRoot}/roulette`, transports: ["websocket"] });
 
-  const roulette = new Roulette();
-  roulette.on("session-created", ({ roomId, masterId }) => {
-    console.log(`session ${roomId} has been created!`);
-    io.to(roomId).emit("session-created", { roomId, masterId });
-  }); 
+  const roulette = new Roulette({ io });
 
   io.on("connection", (socket: Socket) => {
     console.log(`a user ${socket.id} connected to the roulette server`);
@@ -26,9 +22,17 @@ export function runServer(): Server {
       socket.emit("started");
     });
 
-    socket.on("stopped", () => {
+    socket.on("stopped", (data) => {
       console.log(`a user ${socket.id} stopped roulette`);
-      roulette.stop(socket);
+      if (data.sessionId) {
+        roulette.disconnectPeers(socket, data.sessionId);
+      } else {
+        roulette.stop(socket);
+      }
+    });
+
+    socket.on("next", (data) => {
+
     });
 
     socket.on("signaling-channel", (message) => {
