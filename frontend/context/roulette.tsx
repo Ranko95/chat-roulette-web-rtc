@@ -14,8 +14,10 @@ export interface IContextValue {
   isMaster: boolean;
   isRouletteStarted: boolean;
   chatMessages: ChatMessage[];
+  handleStart(): void;
   handleStop(): void;
   handleNext(): void;
+  handleSendChatMessage(message: ChatMessage): void;
 }
 
 export type ChatMessage = {
@@ -104,6 +106,12 @@ export const Provider: FunctionComponent = (props) => {
     });
   };
 
+  const handleStart = () => {
+    if (socket) {
+      socket.emit("start");
+    }
+  };
+
   const handleStop = () => {
     if (socket) {
       socket.emit("stopped", { sessionId });
@@ -124,6 +132,12 @@ export const Provider: FunctionComponent = (props) => {
     setChatMessages([]);
     if (webRTC) {
       webRTC.stopConnection();
+    }
+  };
+
+  const handleSendChatMessage = (message: ChatMessage) => {
+    if (socket) {
+      socket.emit("chat-message", message);
     }
   };
 
@@ -199,8 +213,10 @@ export const Provider: FunctionComponent = (props) => {
         isMaster,
         isRouletteStarted,
         chatMessages,
+        handleStart,
         handleStop,
         handleNext,
+        handleSendChatMessage,
       }}
     >
       {children}

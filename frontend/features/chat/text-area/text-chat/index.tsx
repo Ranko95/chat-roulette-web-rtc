@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState, useEffect, useContext } from "react";
+import React, { FunctionComponent, useRef, useState, useContext } from "react";
 import cn from "classnames";
 import Scrollbars from "react-custom-scrollbars";
 import { ChatMessage, Context as RouletteContext } from "../../../../context/roulette";
@@ -10,7 +10,7 @@ import css from "./index.module.css";
 const TextChat: FunctionComponent = () => {
   const [value, setValue] = useState<string>("");
 
-  const { socket, sessionId, isRouletteStarted, chatMessages } = useContext(RouletteContext);
+  const { socket, sessionId, isRouletteStarted, chatMessages, handleSendChatMessage } = useContext(RouletteContext);
 
   const messageInputRef = useRef<HTMLInputElement>(null);
 
@@ -19,12 +19,7 @@ const TextChat: FunctionComponent = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const { charCode, ctrlKey, currentTarget } = e;
-    // if (charCode === 13 && ctrlKey) {
-    //   e.preventDefault();
-    //   console.log("ctr + enter!!")
-    //   return currentTarget.innerHTML += "\n";
-    // }
+    const { charCode } = e;
     if (charCode === 13) {
       e.preventDefault();
       handleSendMessage();
@@ -44,7 +39,7 @@ const TextChat: FunctionComponent = () => {
       sessionId
     };
 
-    socket.emit("chat-message", message);
+    handleSendChatMessage(message);
 
     setValue("");
   };

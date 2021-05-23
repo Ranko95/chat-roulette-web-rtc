@@ -7,16 +7,16 @@ import { Events, IDeviceSettings } from "../../lib/webrtc/WebRtcController";
 import css from "./index.module.css";
 
 const Chat: FunctionComponent = () => {
-  const { 
-    socket,
+  const {
     webRTC,
+    handleStart,
   } = useContext(RoulleteContext);
 
   const [deviceSettings, setDeviceSettings] = useState<IDeviceSettings>(INITIAL_DEVICE_SETTINGS);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
-  const handleStart = async () => {
+  const handleStartRoulette = async () => {
     if (!webRTC) {
       return;
     }
@@ -25,12 +25,10 @@ const Chat: FunctionComponent = () => {
       await webRTC.aquireDevices();
     }
 
-    if (socket) {
-      socket.emit("start");
-    }
+    handleStart();
   };
 
-  const onToggleCamera = () => {
+  const handleToggleCamera = () => {
     if (!webRTC) {
       return;
     }
@@ -38,7 +36,7 @@ const Chat: FunctionComponent = () => {
     webRTC.toggleCamera();
   };
 
-  const onToggleMicrophone = () => {
+  const handleToggleMicrophone = () => {
     if (!webRTC) {
       return;
     }
@@ -75,10 +73,10 @@ const Chat: FunctionComponent = () => {
         deviceSettings={deviceSettings}
         localStream={localStream} 
         remoteStream={remoteStream}
-        onToggleCamera={onToggleCamera} 
-        onToggleMicrophone={onToggleMicrophone} 
+        onToggleCamera={handleToggleCamera} 
+        onToggleMicrophone={handleToggleMicrophone} 
       />
-      <TextArea onStart={handleStart} />
+      <TextArea onStart={handleStartRoulette} />
     </div>
   )
 }
