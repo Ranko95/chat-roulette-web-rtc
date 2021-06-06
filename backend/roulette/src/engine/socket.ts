@@ -33,7 +33,7 @@ export function runServer(): Server {
 
     socket.on("next", (data) => {
       if (data.sessionId) {
-        roulette.next(socket, data.sessionId);
+        roulette.next(data.sessionId);
       }
     });
 

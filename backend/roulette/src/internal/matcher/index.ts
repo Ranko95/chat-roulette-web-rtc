@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { Socket } from "socket.io";
+import setToFilteredArray from "../../helpers/setToFilteredArray";
 import { User } from "../../types";
 
 export class Matcher extends EventEmitter {
@@ -49,24 +50,29 @@ export class Matcher extends EventEmitter {
     let peer1: User | undefined;
     let peer2: User | undefined;
 
-    for (const user of this._waiting) {
-      if (peer1 && peer2) {
-        break;
-      }
+    const searchingUsersList = setToFilteredArray(this._waiting, (user: User) => user.isSearching);
 
-      if (user.isSearching && !peer1)  {
-        peer1 = user;
-        continue;
-      }
+    if (searchingUsersList.length === 0 || searchingUsersList.length === 1) {
+      return null;
+    }
 
-      if (user.isSearching && !peer2) {
-        peer2 = user;
-        continue;
-      }
+    if (searchingUsersList.length === 2) {
+      peer1 = searchingUsersList[0];
+      peer2 = searchingUsersList[1];
+    }
+
+    if (searchingUsersList.length > 2) {
+      const firstRandIndex = Math.floor(Math.random() * searchingUsersList.length);
+      
+      peer1 = searchingUsersList[firstRandIndex];
+      searchingUsersList.splice(firstRandIndex, 1);
+
+      const secondRandIndex = Math.floor(Math.random() * searchingUsersList.length);
+      peer2 = searchingUsersList[secondRandIndex];
     }
 
     if (!peer1 || !peer2) {
-      return null;
+      return null
     }
 
     this.deleteUsers([peer1, peer2]);
@@ -74,7 +80,7 @@ export class Matcher extends EventEmitter {
     return {
       peer1,
       peer2,
-    }
+    };
   }
 
   get waiting() {

@@ -55,7 +55,7 @@ export class Roulette {
     }
   }
 
-  public next(socket: Socket, roomId: string): void {
+  public next(roomId: string): void {
     const session = this.sessions.get(roomId);
 
     if (session) {
@@ -95,7 +95,6 @@ export class Roulette {
   private registerListeners() {
     this.matcher.on("match", () => {
       const partners = this.matcher.onMatchPartners();
-      console.log(partners, "PARTNERS")
       if (partners) {
         const { peer1, peer2 } = partners;
         const roomId = uuidv4();

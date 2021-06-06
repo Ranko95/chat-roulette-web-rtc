@@ -177,7 +177,6 @@ export const Provider: FunctionComponent = (props) => {
   };
 
   const handleIceConnectionStateCompleted = () => {
-    console.log("ICE CONNECTION COMPLETED");
   }
 
   useEffect(() => {
