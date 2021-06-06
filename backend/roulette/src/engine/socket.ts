@@ -1,6 +1,6 @@
-import { Socket, Server } from 'socket.io';
+import { Socket, Server } from "socket.io";
 
-import { Roulette } from "../roulette";
+import { Roulette } from "../internal/roulette";
 import vars from "../config/vars";
 
 import { ChatMessage } from "../types";
@@ -32,12 +32,15 @@ export function runServer(): Server {
     });
 
     socket.on("next", (data) => {
-
+      if (data.sessionId) {
+        roulette.next(socket, data.sessionId);
+      }
     });
 
     socket.on("signaling-channel", (message) => {
-      console.log(message);
-      socket.broadcast.emit("peer-connection-message", message);
+      if (message.sessionId) {
+        socket.to(message.sessionId).emit("peer-connection-message", message.data);
+      }
     });
     
     socket.on("chat-message", (message: ChatMessage) => {

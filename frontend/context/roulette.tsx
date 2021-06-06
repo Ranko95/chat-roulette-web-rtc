@@ -77,7 +77,12 @@ export const Provider: FunctionComponent = (props) => {
     });
 
     socket.on("peers-disconnected", (data: { initiatorId: string }) => {
-      handleDisconnectFromRoulette({ isStarted: !(socket.id === data.initiatorId) });
+      const { initiatorId } = data;
+      handleDisconnectFromRoulette({ isStarted: !(socket.id === initiatorId) });
+    });
+
+    socket.on("peers-disconnected-next", () => {
+      handleDisconnectFromRoulette({ isStarted: true });
     });
 
     socket.on("peer-connection-message", async (data: any) => {
@@ -115,7 +120,6 @@ export const Provider: FunctionComponent = (props) => {
   const handleStop = () => {
     if (socket) {
       socket.emit("stopped", { sessionId });
-      // setIsRouletteStarted(false);
     }
   };
 
@@ -144,13 +148,14 @@ export const Provider: FunctionComponent = (props) => {
 
   const handleGotOffer = (data: { sdp: string, type: SdpType }) => {
     if (socket) {
-      socket.emit("signaling-channel", data);
+      socket.emit("signaling-channel", {data, sessionId });
     }
   };
   
   const handleGotIceCandidate = ({ candidate } : { candidate: RTCIceCandidate, }) => {
     if (socket) {
-      socket.emit("signaling-channel", { type: SDP_OPTIONS.ICE_CANDIDATE, candidate });
+      const data = { type: SDP_OPTIONS.ICE_CANDIDATE, candidate };
+      socket.emit("signaling-channel", { data, sessionId });
     }
   };  
 
