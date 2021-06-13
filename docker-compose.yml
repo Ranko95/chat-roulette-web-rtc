@@ -2,16 +2,11 @@ version: "3.7"
 services:
   frontend:
     build: ./frontend
-    volumes:
-      - ./frontend:/usr/src/app
   roulette:
     build:
       context: ./backend
       dockerfile: ./roulette/Dockerfile
-    volumes:
-      - ./backend/roulette:/usr/src/app
-
   proxy:
     build: ./backend/proxy
     ports:
-      - "3000:80"
+      - "8797:80"

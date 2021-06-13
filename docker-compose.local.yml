@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  frontend:
+    volumes:
+      - ./frontend:/usr/src/app
+  roulette:
+    volumes:
+      - ./backend/roulette:/usr/src/app

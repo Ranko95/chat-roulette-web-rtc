@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Stevanovich Ranko",
   "license": "ISC",
   "devDependencies": {
     "@types/express": "4.17.9",
