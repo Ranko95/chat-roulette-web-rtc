@@ -16,6 +16,7 @@ pipeline {
     stage('Test Pipeline') {
       steps {
         echo 'Running a pipeline...'
+        echo 'Hello'
       }
     }
   }
