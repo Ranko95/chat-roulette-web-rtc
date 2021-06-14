@@ -1,11 +1,11 @@
 import React from "react";
-import Text from "../../text";
+import Text, { TextOptions } from "../../text";
 import css from "./index.module.css"; 
 
 const Header = () => {
   return (
     <div className={css.Container}>
-      <Text type="title-white-extra-big">Chat Roulette</Text>
+      <Text type={TextOptions.TITLE_WHITE_EXTRA_BIG}>Chat Roulette</Text>
     </div>
   )
 }

@@ -5,6 +5,16 @@
   color: $color-text-primary;
 }
 
+.TextGreen {
+  font-size: 1rem;
+  color: $color-text-green;
+}
+
+.TextBlue {
+  font-size: 1rem;
+  color: $color-text-blue;
+}
+
 .TitleWhiteExtraBig {
   font-size: 3rem;
   font-weight: 600;

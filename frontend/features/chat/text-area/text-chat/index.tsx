@@ -3,7 +3,7 @@ import cn from "classnames";
 import Scrollbars from "react-custom-scrollbars";
 import { ChatMessage, Context as RouletteContext } from "../../../../context/roulette";
 import Button from "../../../../components/button";
-import Text from "../../../../components/text";
+import Text, { TextOptions } from "../../../../components/text";
 import MessageInput from "../../../../components/message-input";
 import css from "./index.module.css";
 
@@ -48,19 +48,19 @@ const TextChat: FunctionComponent = () => {
     <div className={css.Container}>
       <div className={css.MessagesContainer}>
       <Scrollbars universal autoHide>
-        {isRouletteStarted ? (
+        {isRouletteStarted && (
           <div className={cn(css.SearchingInfo, { [css.Found]: sessionId })}>
-            <Text type="text">{ !sessionId ? "Searching for a partner..." : "Partner is found, start a conversation!"}</Text>
+            <Text type={TextOptions.TEXT}>{ !sessionId ? "Searching for a partner..." : "Partner is found, start a conversation!"}</Text>
           </div>
-        ) : undefined}
+        )}
         <div className={css.MessagesWrapper}>
           {chatMessages.map((m: ChatMessage, i) => {
             const isMe = m.id === socket?.id;
             
             return (
               <div className={css.Message} key={i}>
-                <Text type="text">{isMe ? "Me: " : "Partner: "}</Text>
-                <Text type="text">{m.message}</Text>
+                <Text type={isMe ? TextOptions.TEXT_GREEN : TextOptions.TEXT_BLUE}>{isMe ? "Me: " : "Partner: "}</Text>
+                <Text type={TextOptions.TEXT}>{m.message}</Text>
               </div>
             );
           })}

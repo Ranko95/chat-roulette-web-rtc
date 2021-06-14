@@ -1,8 +1,16 @@
 version: "3.7"
 services:
   frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/usr/src/app
+    command: ["/scripts/entrypoint.dev.sh"]
   roulette:
+    build: 
+      context: ./backend
+      dockerfile: ./roulette/Dockerfile.dev
     volumes:
       - ./backend/roulette:/usr/src/app
+    command: ["/scripts/entrypoint.dev.sh"]
