@@ -13,10 +13,10 @@ pipeline {
     timestamps()
   }
   stages {
-    stage('Test Pipeline') {
+    stage('Deploy') {
       steps {
-        echo 'Running a pipeline...'
-        echo 'Hello World'
+        sh 'docker-compose build'
+        sh 'docker-compose up -d'
       }
     }
   }
