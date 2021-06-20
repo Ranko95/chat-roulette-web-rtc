@@ -79,6 +79,34 @@ export class Roulette {
   }
   
   public disconnect(socket: Socket): void {
+    //@ts-ignore
+    const rooms = socket.adapter.rooms;
+
+    const hasSession = rooms.size > 1;
+    if (hasSession) {
+      const sessionId = [...rooms][rooms.size - 1][0];
+      if (sessionId) {
+        const session = this.sessions.get(sessionId);
+        if (session) {
+          const { peer1, peer2 } = session;
+
+          this.io.to(sessionId).emit("peers-disconnected-next");
+
+          const partner = [peer1, peer2].filter(p => p.socket.id !== socket.id)[0];
+
+          partner.socket.leave(sessionId);
+
+          this.updateUserStatus(partner, null, true);
+
+          this.sessions.delete(sessionId);
+
+          this.matcher.addUsers([partner]);
+
+          console.log(this.sessions);
+          console.log(this.matcher.waiting);
+        }
+      }
+    }
     this.matcher.onUserDisconnect(socket);
     console.log(this.matcher.waiting);
   }
