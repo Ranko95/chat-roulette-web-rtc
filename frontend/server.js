@@ -23,6 +23,6 @@ app.prepare().then(async () => {
       throw error;
     }
 
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Ready on port ${port}`);
   });
 });
