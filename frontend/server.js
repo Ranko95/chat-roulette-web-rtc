@@ -23,6 +23,6 @@ app.prepare().then(async () => {
       throw error;
     }
 
-    console.log(`> Ready on port ${port}`);
+    console.log(`> Frontend is ready on port ${port}`);
   });
 });
